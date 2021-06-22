@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>IT Market</title>
+    <script src="https://unpkg.com/vue"></script>
+    <link rel="stylesheet" type="text/css" href="assets/css/app.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+    <meta charset="UTF-8">
+</head>
+<body>
+<div id="app">
+    <header>
+        <div class="navbar navbar-default">
+            <div class="navbar-header">
+                <h1>{{ sitename }}</h1>
+            </div>
+            <div class="nav navbar-nav navbar-right cart">
+                <button type="button" class="btn btn-default btn-lg" v-on:click="showCheckout">
+                    <span class="glyphicon glyphicon-shopping-cart">
+                        {{ cartItemCount}}
+                    </span>
+                    Корзина
+                </button>
+            </div>
+
+        </div>
+    </header>
+    <main>
+        <div class="row product">
+            <div v-if="showProduct">
+                <div class="col-md-2 col-md-offset-1">
+                    <figure>
+                        <img v-bind:src="product.image" class="img">
+                    </figure>
+                </div>
+                <div class="col-md-6 col-md-offset-2 description">
+                    <h1 v-text="product.title"></h1>
+                    <p v-html="product.description"></p>
+                    <p class="price">
+                        {{product.price | formatPrice}}
+                    </p>
+                    <button class="btn btn-primary btn-lg" @click="addToCart" v-if="canAddToCart">Добавить в корзину</button> <!--Кнопка добавления товара в корзину-->
+                    <button disabled="true" class="btn btn-primary btn-lg" v-else>Добавить в корзину</button> <!--Кнопка добавления товара в корзину отключена-->
+                </div>
+            </div>
+            <div v-else>
+                <div class="col-md-6">
+                    <strong>Имя:</strong>
+                    <input v-model="order.firstName" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <strong>Фамилия:</strong>
+                    <input v-model="order.lastName" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12"><strong>Адрес:</strong></div>
+                    <div class="col-md-12">
+                        <input v-model.trim="order.address" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12"><strong>Город:</strong></div>
+                    <div class="col-md-12">
+                        <input v-model.trim="order.city" class="form-control" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <strong>Регион:</strong>
+                        <select v-model="order.state" class="form-control">
+                            <option disabled value="">Регион</option>
+                            <option>Алтайский край</option>
+                            <option>Красноярский край</option>
+                            <option>Новосибирская область</option>
+                            <option>Кемеровская область</option>
+                            <option>Томская область</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-6 col-md-offset-4">
+                        <strong>Почтовый индекс:</strong>
+                        <input v-model.trim="order.zip" class="form-control"/>
+                    </div>
+                </div>
+                <div class="col-md-12 verify">
+                    <pre>
+                        Имя: {{order.firstName}}
+                        Фамилия:{{order.lastName}}
+                        Адрес: {{order.address}}
+                        Город:{{order.city}}
+                        Регион: {{order.state}}
+                        Почтовый индекс:{{order.zip}}
+                    </pre>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+<script type="text/javascript">
+    let APP_LOG_LIFECYCLE_EVENTS = false;
+    let webstore = new Vue({
+        el:'#app',
+        data:{
+            sitename:"IT Market Vue",
+            showProduct: true,
+            order:{
+                firstName:'',
+                lastName:'',
+                address: '',
+                city: '',
+                zip: '',
+                state: '',
+            },
+            product:{
+                id:1001,
+                title:"IpadPro 128",
+                description:"Планшет <em>Ipad</em> Pro 128Гб",
+                price:120000,
+                image:"assets/images/ipad.jpg",
+                availableInventory: 5 //кол-во доступных к заказу
+            },
+            cart: [] //корзина товаров
+        },
+
+        filters: {
+            formatPrice(price) {	//#B
+                if (!parseInt(price)) { return ""; }	//#C
+                if (price > 99999) {	//#D
+                    let priceString = (price / 100).toFixed(2);	//#E
+                    let priceArray = priceString.split("").reverse();	//#F
+                    let index = 3;	//#F
+                    while (priceArray.length > index + 3) {	//#F
+                        priceArray.splice(index + 3, 0, ",");	//#F
+                        index += 4;	//#F
+                    }	//#F
+                    return "$" + priceArray.reverse().join("");	//#G
+                } else {
+                    return "$" + (price / 100).toFixed(2);	//#H
+                }
+            }
+
+        },
+        methods: {
+            addToCart: function () {
+                this.cart.push(this.product.id);
+            },
+            //Метод срабатывает после нажатия кнопки корзины
+            showCheckout () {
+                this.showProduct = !this.showProduct //? false:true;
+            }
+
+        },
+        computed:{
+            cartItemCount: function () {
+                return this.cart.length||0;
+            },
+            canAddToCart: function () {
+                return this.product.availableInventory>this.cartItemCount;
+            }
+        },
+        beforeCreate:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("beforeCreate");
+            }
+        },
+        created:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("created");
+            }
+        },
+        beforeMount:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("beforeMount");
+            }
+        },
+        mounted:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("mounted");
+            }
+        },
+        beforeUpdate:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("beforeUpdate");
+            }
+        },
+        updated:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("updated");
+            }
+        },
+        beforeDestroy:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("beforeDestroy");
+            }
+        },
+        destroyed:function () {
+            if (APP_LOG_LIFECYCLE_EVENTS){
+                console.log("destroyed");
+            }
+        },
+    });
+</script>
+
+</body>
+</html>
