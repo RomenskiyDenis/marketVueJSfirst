@@ -83,6 +83,30 @@
                         <input v-model.trim="order.zip" class="form-control"/>
                     </div>
                 </div>
+                <div class="form-group">
+                    <div class="col-md-6 boxes">
+                        <input type="checkbox"
+                               id="gift" value="true"
+                               v-bind:true-value="order.sendGift"
+                               v-bind:false-value="order.dontSendGift"
+                               v-model="order.gift">
+                        <label for="gift">Отправить как подарок?</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-6 boxes">
+                        <input type="radio"
+                        id = "home" value="home"
+                        v-model="order.method"
+                        v-bind:value="order.home">
+                        <label for="home">Домашний адрес</label>
+                        <input type="radio"
+                        id = "business" value="Business"
+                        v-model="order.method"
+                        v-bind:value="order.business">
+                        <label for ="business">Рабочий адрес</label>
+                    </div>
+                </div>
                 <div class="col-md-12 verify">
                     <pre>
                         Имя: {{order.firstName}}
@@ -91,6 +115,8 @@
                         Город:{{order.city}}
                         Регион: {{order.state}}
                         Почтовый индекс:{{order.zip}}
+                        Тип адреса доставки:{{order.method}}
+                        Отправить как подарок:{{order.gift}}
                     </pre>
                 </div>
 
@@ -112,6 +138,12 @@
                 city: '',
                 zip: '',
                 state: '',
+                method:'Домашний адрес',
+                business: 'Рабочий адрес',
+                home: 'Домашний адрес',
+                gift:'Отправить как подарок',
+                sendGift: 'Отправить как подарок',
+                dontSendGift: 'Не отправлять как подарок'
             },
             product:{
                 id:1001,
