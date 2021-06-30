@@ -69,11 +69,7 @@
                         <strong>Регион:</strong>
                         <select v-model="order.state" class="form-control">
                             <option disabled value="">Регион</option>
-                            <option>Алтайский край</option>
-                            <option>Красноярский край</option>
-                            <option>Новосибирская область</option>
-                            <option>Кемеровская область</option>
-                            <option>Томская область</option>
+                            <option v-for="(state,key) in states" v-bind:value="state">{{key}}</option>
                         </select>
                     </div>
                 </div>
@@ -136,6 +132,14 @@
         data:{
             sitename:"IT Market Vue",
             showProduct: true,
+            states:{
+                'Алтайский край':'Алтайский край',
+                'Красноярский край':'Красноярский край',
+                'Новосибирская область':'Новосибирская область',
+                'Кемеровская область':'Кемеровская область',
+                'Томская область':'Томская область',
+
+            },
             order:{
                 firstName:'',
                 lastName:'',
