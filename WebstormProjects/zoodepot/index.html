@@ -3,8 +3,10 @@
 <head>
     <title>IT Market</title>
     <script src="https://unpkg.com/vue"></script>
-    <link rel="stylesheet" type="text/css" href="assets/css/app.css"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="assets/css/app.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.2/axios.js"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,51 +37,81 @@
         </div>
     </header>
     <main>
-        <div class="row product">
-            <div v-if="showProduct">
-                <div class="col-md-2 col-md-offset-1">
+        <div v-if="showProduct">
+            <div v-for="product in sortedProducts">
+                <div class="row">
+                    <div class="col-md-5 col-md-offset-0">
                     <figure>
                         <img v-bind:src="product.image" class="img">
                     </figure>
+                    </div>
+                    <div class="col-md-6 col-md-offset-2 description">
+                        <h1 v-text="product.title"></h1>
+                        <p v-html="product.description"></p>
+                        <p class="price">
+                            {{product.price | formatPrice}}
+                        </p>
+                        <button class="btn btn-primary position-relative" v-on:click="addToCart(product)"
+                                v-if="canAddToCart(product)">Добавить в корзину</button> <!--Кнопка добавления товара в корзину-->
+                        <button disabled="true" class="btn btn-primary position-relative"
+                                v-else>Добавить в корзину</button> <!--Кнопка добавления товара в корзину отключена-->
+                        <span class="badge" v-if="product.availableInventory-cartCount(product.id)===0">
+                            Товар закончился
+                        </span>
+                        <span class="badge" v-else-if="product.availableInventory-cartCount(product.id)<5">
+                            Осталось {{product.availableInventory-cartCount(product.id)}}
+                        </span>
+                        <span class="badge" v-else>
+                            К покупкам!
+                        </span>
+                        <div class="rating">
+                            <span v-bind:class="{'rating-active' :checkRating(n, product)}" v-for="n in 5">☆
+                            </span>
+                        </div>
+                    </div>
+                    <!-- end of col-md-6-->
                 </div>
-                <div class="col-md-6 col-md-offset-2 description">
-                    <h1 v-text="product.title"></h1>
-                    <p v-html="product.description"></p>
-                    <p class="price">
-                        {{product.price | formatPrice}}
-                    </p>
-                    <button class="btn btn-primary position-relative" @click="addToCart"
-                            v-if="canAddToCart">Добавить в корзину</button> <!--Кнопка добавления товара в корзину-->
-                    <button disabled="true" class="btn btn-primary position-relative"
-                            v-else>Добавить в корзину</button> <!--Кнопка добавления товара в корзину отключена-->
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" v-if="product.availableInventory-cartItemCount<5">
-                        Осталось {{product.availableInventory-cartItemCount}}
-                    </span>
-                </div>
+                <!-- end of row-->
+                <hr />
             </div>
+            <!-- end of v-for-->
+        </div>
             <div v-else>
-                <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-10 col-md-offset-1">
+                        <div class="panel panel-info">
+                            <div class="panel-heading">Pet Depot Checkout</div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <div class="col-md-12">
+                                        <h4>
+                                            <strong>Enter Your Information</strong>
+                                        </h4>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                <div class="col-md-6">
                     <strong>Имя:</strong>
                     <input v-model.trim.lazy="order.firstName" class="form-control" />
                     <!--модификатор .lazy позволяет синхронизировать значения при наступлении события change-->
                 </div>
-                <div class="col-md-6">
+                                <div class="col-md-6">
                     <strong>Фамилия:</strong>
                     <input v-model.trim="order.lastName" class="form-control" />
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-12"><strong>Адрес:</strong></div>
                     <div class="col-md-12">
                         <input v-model.trim.trim="order.address" class="form-control" />
                     </div>
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-12"><strong>Город:</strong></div>
                     <div class="col-md-12">
                         <input v-model.trim="order.city" class="form-control" />
                     </div>
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-2">
                         <strong>Регион:</strong>
                         <select v-model="order.state" class="form-control">
@@ -88,13 +120,13 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-6 col-md-offset-4">
                         <strong>Почтовый индекс:</strong>
                         <input v-model.trim.number="order.zip" class="form-control"/>
                     </div>
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-6 boxes">
                         <input type="checkbox"
                                id="gift" value="true"
@@ -104,7 +136,7 @@
                         <label for="gift">Отправить как подарок?</label>
                     </div>
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-6 boxes">
                         <input type="radio"
                         id = "home" value="home"
@@ -118,12 +150,12 @@
                         <label for ="business">Рабочий адрес</label>
                     </div>
                 </div>
-                <div class="form-group">
+                                <div class="form-group">
                     <div class="col-md-6">
                         <button type="submit" class="btn btn-primary submit" v-on:click="submitForm">Заказать</button>
                     </div>
                 </div>
-                <div class="col-md-12 verify">
+                                <div class="col-md-12 verify">
                     <pre>
                         Имя: {{order.firstName}}
                         Фамилия:{{order.lastName}}
@@ -136,8 +168,19 @@
                     </pre>
                 </div>
 
+                                    <!-- end of col-md-12 verify-->
+                                </div>
+                                <!--end of panel-body-->
+                            </div>
+                            <!--end of panel panel-info-->
+
+
+                        </div>
+                        <!--end of col-md-10 col-md-offset-1-->
+                    </div>
+                    <!--end of row-->
+                </div>
             </div>
-        </div>
     </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
@@ -171,14 +214,26 @@
                 sendGift: 'Отправить как подарок',
                 dontSendGift: 'Не отправлять как подарок'
             },
-            product:{
-                id:1001,
-                title:"IpadPro 128",
-                description:"Планшет <em>Ipad</em> Pro 128Гб",
-                price:120000,
-                image:"assets/images/ipad.jpg",
-                availableInventory: 10 //кол-во доступных к заказу
-            },
+            products:[
+                {
+                    "id":1001,
+                    "title":"IpadPro 128",
+                    "description":"Планшет <em>Ipad</em> Pro 128Гб",
+                    "price":120000,
+                    "image":"assets/images/ipad.jpg",
+                    "availableInventory": 10, //кол-во доступных к заказу
+                    "rating": 3
+                },
+                {
+                    "id": 1002,
+                    "title": "MacBook Air",
+                    "description": "Ноутбук <em>MacBook</em> Air 13",
+                    "price": 113000,
+                    "image": "assets/images/macbook-air.jpg",
+                    "availableInventory": 7,
+                    "rating": 4
+                }
+            ],
             cart: [] //корзина товаров
         },
 
@@ -201,8 +256,11 @@
 
         },
         methods: {
-            addToCart: function () {
-                this.cart.push(this.product.id);
+            checkRating(n, myProduct) {
+                return myProduct.rating - n >= 0;
+            },
+            addToCart(aProduct) {
+                this.cart.push(aProduct.id);
             },
             //Метод срабатывает после нажатия кнопки корзины
             showCheckout () {
@@ -211,6 +269,20 @@
             },
             submitForm(){
                 alert('Заказано');
+            },
+            canAddToCart(aProduct) {
+                //return this.product.availableInventory > this.cartItemCount;
+                console.log(aProduct.availableInventory);
+                return aProduct.availableInventory > this.cartCount(aProduct.id);
+            },
+            cartCount(id) {
+                let count = 0;
+                for (let i = 0; i < this.cart.length; i++) {
+                    if (this.cart[i] === id) {
+                        count++;
+                    }
+                }
+                return count;
             }
 
         },
@@ -218,11 +290,25 @@
             cartItemCount: function () {
                 return this.cart.length||0;
             },
-            canAddToCart: function () {
-                return this.product.availableInventory>this.cartItemCount;
-            },
+
             canClickToOrder: function () {
                 return this.cart.length>0;
+            },
+            sortedProducts() {
+                if (this.products.length > 0) {
+                    let productsArray = this.products.slice(0);
+                    console.log(productsArray);
+                    console.log(this.products);
+                    function compare(a, b) {
+                        if (a.title.toLowerCase() < b.title.toLowerCase())
+                            return -1;
+                        if (a.title.toLowerCase() > b.title.toLowerCase())
+                            return 1;
+                        return 0;
+                    }
+                    return productsArray.sort(compare);
+                }
+
             }
         },
         beforeCreate:function () {
@@ -231,9 +317,11 @@
             }
         },
         created:function () {
-            if (APP_LOG_LIFECYCLE_EVENTS){
-                console.log("created");
-            }
+           /* axios.get('./products.json')
+                .then((response) => {
+                    this.products = response.data.products;
+                    console.log(this.products);
+                });*/
         },
         beforeMount:function () {
             if (APP_LOG_LIFECYCLE_EVENTS){

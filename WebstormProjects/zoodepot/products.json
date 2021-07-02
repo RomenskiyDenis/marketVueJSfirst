@@ -1,0 +1,22 @@
+{
+  "products":[
+    {
+      "id":1001,
+      "title":"IpadPro 128",
+      "description":"Планшет <em>Ipad</em> Pro 128Гб",
+      "price":120000,
+      "image":"assets/images/ipad.jpg",
+      "availableInventory": 10, //кол-во доступных к заказу
+      "rating": 3
+    },
+    {
+      "id": 1002,
+      "title": "MacBook Air",
+      "description": "Ноутбук <em>MacBook</em> Air 13",
+      "price": 113000,
+      "image": "assets/images/macbook-air.jpg",
+      "availableInventory": 7,
+      "rating": 4
+    }
+  ]
+}
