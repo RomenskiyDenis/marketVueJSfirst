@@ -5,7 +5,9 @@
     <script src="https://unpkg.com/vue"></script>
     <link rel="stylesheet" type="text/css" href="assets/css/app.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 <div id="app">
@@ -15,11 +17,18 @@
                 <h1>{{ sitename }}</h1>
             </div>
             <div class="nav navbar-nav navbar-right cart">
-                <button type="button" class="btn btn-default btn-lg" v-on:click="showCheckout">
+               <!-- <button type="button" class="btn btn-default btn-lg" v-on:click="showCheckout">-->
+                <button type="button" class="btn btn-default btn-lg" @click="showCheckout" v-if="canClickToOrder">
                     <span class="glyphicon glyphicon-shopping-cart">
                         {{ cartItemCount}}
                     </span>
-                    Корзина
+                    {{showCheckoutText}}
+                </button>
+                <button disabled="true" class="btn btn-default btn-lg" v-else>
+                    <span class="glyphicon glyphicon-shopping-cart">
+                        {{ cartItemCount}}
+                    </span>
+                    {{showCheckoutText}}
                 </button>
             </div>
 
@@ -39,23 +48,29 @@
                     <p class="price">
                         {{product.price | formatPrice}}
                     </p>
-                    <button class="btn btn-primary btn-lg" @click="addToCart" v-if="canAddToCart">Добавить в корзину</button> <!--Кнопка добавления товара в корзину-->
-                    <button disabled="true" class="btn btn-primary btn-lg" v-else>Добавить в корзину</button> <!--Кнопка добавления товара в корзину отключена-->
+                    <button class="btn btn-primary position-relative" @click="addToCart"
+                            v-if="canAddToCart">Добавить в корзину</button> <!--Кнопка добавления товара в корзину-->
+                    <button disabled="true" class="btn btn-primary position-relative"
+                            v-else>Добавить в корзину</button> <!--Кнопка добавления товара в корзину отключена-->
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" v-if="product.availableInventory-cartItemCount<5">
+                        Осталось {{product.availableInventory-cartItemCount}}
+                    </span>
                 </div>
             </div>
             <div v-else>
                 <div class="col-md-6">
                     <strong>Имя:</strong>
-                    <input v-model="order.firstName" class="form-control" />
+                    <input v-model.trim.lazy="order.firstName" class="form-control" />
+                    <!--модификатор .lazy позволяет синхронизировать значения при наступлении события change-->
                 </div>
                 <div class="col-md-6">
                     <strong>Фамилия:</strong>
-                    <input v-model="order.lastName" class="form-control" />
+                    <input v-model.trim="order.lastName" class="form-control" />
                 </div>
                 <div class="form-group">
                     <div class="col-md-12"><strong>Адрес:</strong></div>
                     <div class="col-md-12">
-                        <input v-model.trim="order.address" class="form-control" />
+                        <input v-model.trim.trim="order.address" class="form-control" />
                     </div>
                 </div>
                 <div class="form-group">
@@ -76,7 +91,7 @@
                 <div class="form-group">
                     <div class="col-md-6 col-md-offset-4">
                         <strong>Почтовый индекс:</strong>
-                        <input v-model.trim="order.zip" class="form-control"/>
+                        <input v-model.trim.number="order.zip" class="form-control"/>
                     </div>
                 </div>
                 <div class="form-group">
@@ -125,6 +140,7 @@
         </div>
     </main>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
 <script type="text/javascript">
     let APP_LOG_LIFECYCLE_EVENTS = false;
     let webstore = new Vue({
@@ -132,6 +148,7 @@
         data:{
             sitename:"IT Market Vue",
             showProduct: true,
+            showCheckoutText:'Корзина',
             states:{
                 'Алтайский край':'Алтайский край',
                 'Красноярский край':'Красноярский край',
@@ -160,7 +177,7 @@
                 description:"Планшет <em>Ipad</em> Pro 128Гб",
                 price:120000,
                 image:"assets/images/ipad.jpg",
-                availableInventory: 5 //кол-во доступных к заказу
+                availableInventory: 10 //кол-во доступных к заказу
             },
             cart: [] //корзина товаров
         },
@@ -190,6 +207,7 @@
             //Метод срабатывает после нажатия кнопки корзины
             showCheckout () {
                 this.showProduct = !this.showProduct //? false:true;
+                this.showCheckoutText=!this.showProduct?'К покупкам':'Корзина';
             },
             submitForm(){
                 alert('Заказано');
@@ -202,6 +220,9 @@
             },
             canAddToCart: function () {
                 return this.product.availableInventory>this.cartItemCount;
+            },
+            canClickToOrder: function () {
+                return this.cart.length>0;
             }
         },
         beforeCreate:function () {
